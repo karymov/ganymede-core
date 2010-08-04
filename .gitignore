@@ -1,0 +1,15 @@
+*.beam
+erl_crash.dump
+*.DS_Store
+Mnesia.*
+*.log
+*.cookie
+*.swp
+*~.nib
+*.pbxuser
+*.perspective
+*.perspectivev3
+*.mode1v3
+*.mode2v3
+*.*~
+nitrogen/
