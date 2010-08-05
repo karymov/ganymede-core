@@ -21,8 +21,7 @@
     {id = null,
     name = null,
     type = 0,
-    parent = null,
-    children = null}).
+    parent = null}).
 
 -record(book_meta,
     {id = null,
@@ -32,82 +31,19 @@
     year = null,
     pages_count = null,
     abstract = null,
-    discipline = null,
-    resources_ids = null,
-    covers_ids = null}).
+    discipline = null}).
 
 -record(category_meta,
     {id = null,
     name = null,
     discipline = null,
-    description = null,
-    resources_ids = null,
-    covers_ids = null}).
+    description = null}).
 
 -record(person_meta,
     {id, name, surname}).
 
 -record(resource_meta,
     {id, name, filepath, type_id}).
-
-%% DELETE BEGIN 
-
--record(g_record_info,
-    {info
-}).
-
-g_record_info(Info, Types) ->
-    #g_record_info{
-        info = 
-        lists:zipwith(
-            fun(Field, Type) ->
-                {Field, Type}
-            end,
-            Info,
-            Types
-        )
-    }.
-
-g_record_info(account) ->
-    g_record_info( record_info(fields, account), record_types(account));
-
-g_record_info(data_node) ->
-    g_record_info( record_info(fields, data_node), record_types(data_node));
-
-g_record_info(book_meta) ->
-    g_record_info( record_info(fields, book_meta), record_types(book_meta));
-
-g_record_info(category_meta) ->
-    g_record_info( record_info(fields, category_meta), record_types(category_meta)).
-
-record_fields(account) ->
-    record_info(fields, account);
-record_fields(data_node) ->
-    record_info(fields, data_node);
-record_fields(book_meta) ->
-    record_info(fields, book_meta);
-record_fields(category_meta) ->
-    record_info(fields, category_meta).
-
-record_types(account) ->
-    [str, str, str, str,
-    str, str, datetime,
-    datetime, int, int,
-    str];
-
-record_types(data_node) ->
-    [str, str, str, str,
-    str_list];
-
-record_types(book_meta) ->
-    [str, str, str, str,
-    int, int, str, str,
-    str_list, str_list];
-
-record_types(category_meta) ->
-     [str, str, str, str,
-     str_list, str_list].
-% DELETE END 
 
 role_atom(N) when is_binary(N) -> role_atom(list_to_integer(binary_to_list(N)));
 role_atom(0) -> visitor;
@@ -122,8 +58,10 @@ role_type(admin) -> 2;
 role_type(moderator) -> 3;
 role_type(_) -> 0.
 
-data_node_type(category) -> 0;
-data_node_type(book) -> 1.
+node_atom(Atom) when is_atom(Atom) -> Atom; 
+node_atom(0) -> category;
+node_atom(1) -> book.
 
-data_node_atom(0) -> category;
-data_node_atom(1) -> book.
+node_type(Integer) when is_integer(Integer) -> Integer;
+node_type(category) -> 0;
+node_type(book) -> 1.

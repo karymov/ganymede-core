@@ -8,7 +8,6 @@
 
 -export([get/1]).
 -export([put/1, remove/1, update/2, exist/2]).
-%-export([test1/0, test2/0, test3/0]).
 
 -include("ganymede.hrl").
 -include("ganymede_utils.hrl").
@@ -22,8 +21,6 @@
 get(ID) ->
     sql:select(account, ID).
 
-%% @doc
-%% @spec
 put(#account{} = Account) when erlang:is_record(Account, account) ->
     case field_length(Account#account.password) > 0 of
         true ->
@@ -45,18 +42,12 @@ put(#account{} = Account) when erlang:is_record(Account, account) ->
 put(_) ->
     {error, empty}.
 
-%% @doc
-%% @spec
 remove(ID) ->
     sql:delete(account, ID).
     
-%% @doc
-%% @spec
 update(ID, #account{} = Account) when (Account#account.id =:= ID) ->
     {error, not_implemented}.
 
-%% @doc
-%% @spec
 exist(Login, Password) ->
     case login_exist(Login, {return, id}) of
         {false, undefined} ->
@@ -77,6 +68,7 @@ exist(Login, Password) ->
 %% Module Utilities
 %%
 %%--------------------------------------------------------------------
+
 field_length(Password) when is_list(Password) ->
     length(Password);
 field_length(Password) when is_binary(Password) ->

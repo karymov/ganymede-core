@@ -7,7 +7,7 @@
 -module(sql).
 
 -export([connect/0, connect/5, close/0]).
--export([select/2, insert/1, delete/2, update/2]).
+-export([select/2, insert/1, insert2/2, delete/2, update/2]).
 -export([equery/2]).
 % -export([test1/0, test2/1]).
 
@@ -48,6 +48,15 @@ insert(Record) ->
     TableName = sql_table(RecordTag),
     ?MODULE:connect(),
     {ok, _, _, [{ID}]} = pgsql:equery(get(c), "INSERT INTO "++TableName++P1++" VALUES "++P2++" returning id", Parameters),
+    ?MODULE:close(),
+    {ok, ID}.
+
+insert2(Record, ID) ->
+    [RecordTag | [_|Parameters]] = tuple_to_list(Record),
+    {P1, P2} = sql_insert2_pattern(RecordTag),
+    TableName = sql_table(RecordTag),
+    ?MODULE:connect(),
+    {ok, 1} = pgsql:equery(get(c), "INSERT INTO "++TableName++P1++" VALUES "++P2, [ID|Parameters]),
     ?MODULE:close(),
     {ok, ID}.
 

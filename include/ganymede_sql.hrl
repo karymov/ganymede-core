@@ -7,14 +7,29 @@ sql_insert_pattern(account) ->
     {"(login,person_id,password,name,surname,email,description,role,state,reg_datetime,login_datetime)",
     "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)"};
 sql_insert_pattern(data_node) ->
-    {"(name,type,children)",
-    "($1,$2,$3,$4)"};
+    {"(name,type,parent)",
+    "($1,$2,$3)"};
 sql_insert_pattern(book_meta) ->
-    {"(name,author_id,publisher_id,year,pages_count,abstract,discipline,resources_ids,covers_ids)",
-    "($1,$2,$3,$4,$5,$6,$7,$8,$9)"};
+    {"(name,author_id,publisher_id,year,pages_count,abstract,discipline)",
+    "($1,$2,$3,$4,$5,$6,$7)"};
 sql_insert_pattern(category_meta) ->
-    {"(name,discipline,description,resources_ids,covers_ids)",
-    "($1,$2,$3,$4,$5,$6)"}.
+    {"(name,discipline,description)",
+    "($1,$2,$3)"}.
+
+sql_insert2_pattern(account) ->
+    {"(id,login,person_id,password,name,surname,email,description,role,state,reg_datetime,login_datetime)",
+    "($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)"};
+sql_insert2_pattern(data_node) ->
+    {"(id,name,type,parent)",
+    "($1,$2,$3,$4)"};
+sql_insert2_pattern(book_meta) ->
+    {"(id,name,author_id,publisher_id,year,pages_count,abstract,discipline)",
+    "($1,$2,$3,$4,$5,$6,$7,$8)"};
+sql_insert2_pattern(category_meta) ->
+    {"(id,name,discipline,description)",
+    "($1,$2,$3,$4)"}.
+
+
 
 sql_update_pattern(account) ->
     "person_id=$2,password=$3,name=$4,surname=$5,role=$6,state=$7,reg_datetime=$8,login_datetime=$9,description=$10,email=$11";

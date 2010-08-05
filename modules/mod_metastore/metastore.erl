@@ -8,8 +8,8 @@
 -export([start_link/0, start_link/1, stop/0]).
 -export([init/1, terminate/2, handle_cast/2]).
 -export([handle_info/2, handle_call/3]).
--export([get_node/1, get_item/1, put/3, remove/1, update/3, exist/1]).
--export([get_root/0]).
+-export([get_node/1, get_item/1, put/3, remove/1, update/3]).
+-export([get_children/1, get_root/0, make_root/0]).
 
 -behaviour(gen_server).
 
@@ -51,11 +51,15 @@ remove(ID) ->
 update(ID, DataNode, NodeItem) ->
     gen_server:call(?MODULE, {update, ID, DataNode, NodeItem}).
 
-exist(ID) ->
-     gen_server:call(?MODULE, {exist, ID}).
+get_children(ID) ->
+     gen_server:call(?MODULE, {get_children, ID}).
 
 get_root() ->
     gen_server:call(?MODULE, {get_root}).
+
+make_root() ->
+    gen_server:call(?MODULE, {make_root}).
+    
 
 %%--------------------------------------------------------------------
 %% 
@@ -91,8 +95,11 @@ handle_call({remove, ID}, _From, LoopData) ->
 handle_call({update, ID, DataNode, NodeItem}, _From, LoopData) ->
     {reply, metastore_db:update(ID, DataNode, NodeItem), LoopData};
 
-handle_call({exist, ID}, _From, LoopData) ->
-    {reply, metastore_db:exist(ID), LoopData};
+handle_call({get_children, ID}, _From, LoopData) ->
+    {reply, metastore_db:get_children(ID), LoopData};
 
 handle_call({get_root}, _From, LoopData) ->
-    {reply, metastore_db:get_root(), LoopData}.
+    {reply, metastore_db:get_root(), LoopData};
+
+handle_call({make_root}, _From, LoopData) ->
+    {reply, metastore_db:make_root(), LoopData}.
