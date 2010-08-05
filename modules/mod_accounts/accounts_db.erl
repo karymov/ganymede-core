@@ -8,9 +8,10 @@
 
 -export([get/1]).
 -export([put/1, remove/1, update/2, exist/2]).
--export([test1/0, test2/0, test3/0]).
+%-export([test1/0, test2/0, test3/0]).
 
 -include("ganymede.hrl").
+-include("ganymede_utils.hrl").
 
 %%--------------------------------------------------------------------
 %%
@@ -18,81 +19,55 @@
 %%
 %%--------------------------------------------------------------------   
 
-%% @doc
-%% @spec
-% get_all() ->
-%     lists:map(
-%         fun(Record) ->
-%             list_to_account(Record)
-%         end,
-%         g_db:select("SELECT * FROM accounts")
-%     ).
-
-%% @doc
-%% @spec
-get(ID) when  is_list(ID) ->
-    Query = "SELECT * FROM accounts WHERE id = '" ++ g_db:to_str(ID) ++ "'",
-    case g_db:select(Query) of
-        [] ->
-            undefined;
-        [Record] ->
-            list_to_account(Record);
-        Error ->
-            {error, Error}
-    end.
+get(ID) ->
+    sql:select(account, ID).
 
 %% @doc
 %% @spec
 put(#account{} = Account) when erlang:is_record(Account, account) ->
-    IdAndPassNotAreNull =
-        g_db:not_null(Account#account.id) andalso
-        g_db:not_null(Account#account.password),
-    
-    if IdAndPassNotAreNull
-        %% if id and password is not null
-         ->
-            %% if id is unique
-            case ?MODULE:get(Account#account.id) of
-                undefined ->
-                    Info = g_record_info(account),
-                    HashedPassword = g_db:hash_str(Account#account.password),
-                    case g_db:insert(Account#account{password = HashedPassword}, Info, "accounts") of
-                        {ok, 1} ->
+    case field_length(Account#account.password) > 0 of
+        true ->
+            case login_exist(Account#account.login, {return, null}) of
+                false ->
+                    EncodePassword = encode_password(Account#account.password),
+                    case sql:insert(Account#account{password = EncodePassword}) of
+                        {ok, ID} ->
                             {ok, put};
                         DbError ->
                             {error, DbError}
                     end;
-                _Record ->
-                    {error, duplicate}
+                true ->
+                    {error, dublicate}
             end;
-        true ->
-            {error, empty}
-    end.
+        false ->
+            {error, bad_password}
+    end;
+put(_) ->
+    {error, empty}.
 
 %% @doc
 %% @spec
 remove(ID) ->
-    Query = "DELETE FROM accounts WHERE id = '" ++ g_db:to_str(ID) ++ "'",
-    g_db:delete(Query).
+    sql:delete(account, ID).
     
 %% @doc
 %% @spec
 update(ID, #account{} = Account) when (Account#account.id =:= ID) ->
-    Info = g_record_info(account),
-    g_db:update(Account, Info, "accounts", "WHERE id = '" ++ g_db:to_str(ID) ++ "'").
+    {error, not_implemented}.
 
 %% @doc
 %% @spec
-exist(ID, Password) ->
-    case ?MODULE:get(ID) of
-        undefined ->
+exist(Login, Password) ->
+    case login_exist(Login, {return, id}) of
+        {false, undefined} ->
             {error, undefined};
-        Account ->
-            HashedPassword = list_to_binary(g_db:hash_str(Password)),
-            if
-                HashedPassword =:= Account#account.password ->
-                    {ok, Account};
+        {true, ID} ->
+            Account = ?MODULE:get(ID),
+            EncodedPassword = to_bin(encode_password(Password)),
+            case EncodedPassword =:= to_bin(Account#account.password) of
                 true ->
+                    {ok, Account};
+                false ->
                     {error, bad_password}
             end
     end.
@@ -102,49 +77,29 @@ exist(ID, Password) ->
 %% Module Utilities
 %%
 %%--------------------------------------------------------------------
+field_length(Password) when is_list(Password) ->
+    length(Password);
+field_length(Password) when is_binary(Password) ->
+    length(list_to_binary(Password));
+field_length(_) ->
+    0.
 
-%% @doc convert PgSql List to #account record
-%% @spec list_to_account([Field1, Field2, ...]) -> #account{}
-list_to_account({ID,
-                PersonID,
-                Password,
-                Name,
-                Surname,
-                Role,
-                State,
-                RegDatetime,
-                LoginDatetime,
-                Description,
-                Email}) ->
-                    
-    #account{id = ID,
-            person_id = g_db:if_null_to_undf(PersonID),
-            password = g_db:if_null_to_undf(Password),
-            name = g_db:if_null_to_undf(Name),
-            surname = g_db:if_null_to_undf(Surname),
-            description = g_db:if_null_to_undf(Description),
-            reg_datetime = g_db:if_null_to_undf(RegDatetime),
-            role = g_db:if_null_to_undf(Role),
-            state = g_db:if_null_to_undf(State),
-            login_datetime = g_db:if_null_to_undf(LoginDatetime),
-            email = g_db:if_null_to_undf(Email)}.
+login_exist(Login, {return, null}) ->
+    case sql:equery("SELECT login FROM accounts WHERE login=$1",[Login]) of
+        {ok, _, []} ->
+            false;
+        {ok, _, _} ->
+            true
+    end;
+login_exist(Login, {return, id}) ->
+    case sql:equery("SELECT id FROM accounts WHERE login=$1",[Login]) of
+        {ok, _, []} ->
+            {false, undefined};
+        {ok, _, [{ID}]} ->
+            {true, ID}
+    end.
 
-%%--------------------------------------------------------------------
-%%
-%% Tests
-%%
-%%--------------------------------------------------------------------
-
-test1() ->
-    R = #account{ id = "test1_id",
-        name = "test1_name",
-        role = 1,
-        login_datetime = <<"2010-06-25 13:57:21">>},
-    put(R),
-    ok.
-
-test2() ->
-    ok.
-
-test3() ->
-    ok.
+encode_password(Password) ->
+    Bytes = crypto:sha(Password),
+    List = binary_to_list(Bytes),
+    lists:flatten(list_to_hex(List)).
