@@ -14,8 +14,7 @@
     role = 0,
     state = 0,
     reg_datetime = null,
-    login_datetime = null
-}).
+    login_datetime = null}).
 
 -record(data_node,
     {id = null,
@@ -40,10 +39,15 @@
     description = null}).
 
 -record(person_meta,
-    {id, name, surname}).
+    {id,
+    name,
+    surname}).
 
 -record(resource_meta,
-    {id, name, filepath, type_id}).
+    {id,
+    name,
+    filepath,
+    type_id}).
 
 role_atom(N) when is_binary(N) -> role_atom(list_to_integer(binary_to_list(N)));
 role_atom(0) -> visitor;
@@ -59,8 +63,8 @@ role_type(moderator) -> 3;
 role_type(_) -> 0.
 
 node_atom(Atom) when is_atom(Atom) -> Atom; 
-node_atom(0) -> category;
-node_atom(1) -> book.
+node_atom(0) -> category_meta;
+node_atom(1) -> book_meta.
 
 node_type(Integer) when is_integer(Integer) -> Integer;
 node_type(category) -> 0;

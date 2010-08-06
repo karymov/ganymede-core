@@ -18,10 +18,10 @@
 %%--------------------------------------------------------------------
 
 get_node(ID) ->
-    sql:get(data_node, ID).
+    sql:select(data_node, ID).
 
 get_item(ID) ->
-    sql:select(get_node_type(ID), ID).
+    sql:select(get_node_atom(ID), ID).
     
 put(#data_node{} = Node, NodeItem, ParentID) when is_integer(ParentID) ->
     case node_exist(ParentID) of
@@ -33,7 +33,7 @@ put(#data_node{} = Node, NodeItem, ParentID) when is_integer(ParentID) ->
     end.
         
 remove(ID) ->
-    Type = get_node_type(ID),
+    Type = get_node_atom(ID),
     sql:delete(data_node, ID),
     sql:delete(Type, ID).
     
@@ -73,11 +73,12 @@ node_exist(ID) ->
             true
     end.
 
-get_node_type(ID) ->
+get_node_atom(ID) ->
     case sql:equery("SELECT type FROM data_nodes WHERE id=$1",[ID]) of
-        {ok, _, [{ID}]} ->
-            node_type(ID);
-        {ok, _, _} ->
+        {ok, _, [{Type}]} ->
+            node_atom(Type);
+        X ->
+            io:format("~p~n",[X]),
             undefined
     end.
 
