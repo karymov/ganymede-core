@@ -23,11 +23,16 @@ get_node(ID) ->
 get_item(ID) ->
     sql:select(get_node_atom(ID), ID).
     
-put(#data_node{} = Node, NodeItem, ParentID) when is_integer(ParentID) ->
+put(#data_node{} = Node, Item, ParentID) when is_integer(ParentID) ->
     case node_exist(ParentID) of
         true ->
-            {ok, ID} = sql:insert(Node#data_node{parent = ParentID, type = node_type(Node#data_node.type)}),
-            sql:insert2(NodeItem, ID);
+            {ok, ID} = sql:insert(
+                Node#data_node{
+                    name = element(3, Item),
+                    parent = ParentID,
+                    type = node_type(Node#data_node.type)
+                }),
+            sql:insert2(Item, ID);
         false ->
             {error, null_parent}
     end.
