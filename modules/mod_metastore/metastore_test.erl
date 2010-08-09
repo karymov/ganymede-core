@@ -4,7 +4,7 @@
 
 book() ->
     #book_meta{
-        name = "SICP: Structure and Interpretation of Computer Programs",
+        name = "SICP",
         year = 1987,
         pages_count = 657,
         author_id = 0,
