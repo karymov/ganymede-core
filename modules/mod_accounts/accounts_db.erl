@@ -34,7 +34,7 @@ put(#account{} = Account) when erlang:is_record(Account, account) ->
                             {error, DbError}
                     end;
                 true ->
-                    {error, dublicate}
+                    {error, duplicate}
             end;
         false ->
             {error, bad_password}

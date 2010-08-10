@@ -29,7 +29,7 @@
     publisher_id = null,
     year = null,
     pages_count = null,
-    abstract = null,
+    description = null,
     discipline = null}).
 
 -record(category_meta,
@@ -39,9 +39,13 @@
     description = null}).
 
 -record(person_meta,
-    {id,
-    name,
-    surname}).
+    {id = null,
+    name = null,
+    surname =null}).
+
+-record(publisher_meta,
+    {id = null,
+    name = null}).
 
 -record(resource_meta,
     {id,

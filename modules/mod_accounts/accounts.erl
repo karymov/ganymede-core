@@ -58,29 +58,29 @@ init(_FileName) ->
     g_db:start_link(default),
     {ok, null}.
 
-terminate(_Reason, _LoopData) ->
+terminate(_Reason, _State) ->
     ok.
 
-handle_cast(stop, LoopData) ->
-    {stop, normal, LoopData}.
+handle_cast(stop, State) ->
+    {stop, normal, State}.
     
-handle_info(_Msg, LoopData) ->
-    {noreply, LoopData}.
+handle_info(_Msg, State) ->
+    {noreply, State}.
 
-handle_call({put, Account}, _From, LoopData) ->
-    {reply, accounts_db:put(Account), LoopData};
+handle_call({put, Account}, _From, State) ->
+    {reply, accounts_db:put(Account), State};
 
-handle_call({get, ID}, _From, LoopData) ->
-    {reply, accounts_db:get(ID), LoopData};
+handle_call({get, ID}, _From, State) ->
+    {reply, accounts_db:get(ID), State};
 
-handle_call({remove, ID}, _From, LoopData) ->
-    {reply, accounts_db:remove(ID), LoopData};
+handle_call({remove, ID}, _From, State) ->
+    {reply, accounts_db:remove(ID), State};
 
-handle_call({update, ID, Account}, _From, LoopData) ->
-    {reply, accounts_db:update(ID, Account), LoopData};
+handle_call({update, ID, Account}, _From, State) ->
+    {reply, accounts_db:update(ID, Account), State};
 
-handle_call({exist, ID, Password}, _From, LoopData) ->
-     {reply, accounts_db:exist(ID, Password), LoopData}.
+handle_call({exist, ID, Password}, _From, State) ->
+     {reply, accounts_db:exist(ID, Password), State}.
 
 %%--------------------------------------------------------------------
 %%

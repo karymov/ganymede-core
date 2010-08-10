@@ -7,7 +7,7 @@
 -module(metastore_db).
 
 -export([get_node/1, get_item/1, put/3, remove/1, update/3]).
--export([get_children/1, get_root/0, make_root/0]).
+-export([get_children/1, get_root/0, make_root/0, get_person/1, get_publisher/1]).
 
 -include("ganymede.hrl").
 
@@ -63,7 +63,12 @@ make_root() ->
                         type = node_type(category)
                     },
     sql:insert2(Root, 0).
+
+get_person(ID) ->
+    sql:select(person_meta, ID).
     
+get_publisher(ID) ->
+    sql:select(publisher_meta, ID).
 %%--------------------------------------------------------------------
 %%
 %% Module Utilities
@@ -88,9 +93,5 @@ get_node_atom(ID) ->
     end.
 
 children(ID) ->
-    case sql:equery("SELECT id,name,type FROM data_nodes WHERE parent=$1",[ID]) of
-        {ok, _, []} ->
-            undefined;
-        {ok, _, Rows} ->
-           Rows
-        end.         
+    {ok, _, Rows} = sql:equery("SELECT id,name,type FROM data_nodes WHERE parent=$1",[ID]),
+    Rows.
