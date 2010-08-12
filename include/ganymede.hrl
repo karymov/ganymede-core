@@ -1,6 +1,6 @@
-%%--------------------------------------------------------------------
-%% Ganymede
-%%--------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ganymede header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -record(account,
     {id = null,
@@ -16,42 +16,81 @@
     reg_datetime = null,
     login_datetime = null}).
 
--record(data_node,
+-record(node,
     {id = null,
     name = null,
     type = 0,
     parent = null}).
-
--record(book_meta,
-    {id = null,
-    name = null,
-    author_id = null,
-    publisher_id = null,
-    year = null,
-    pages_count = null,
-    description = null,
-    discipline = null}).
-
+    
 -record(category_meta,
     {id = null,
     name = null,
     discipline = null,
     description = null}).
 
--record(person_meta,
+-record(rsc_meta,
     {id = null,
     name = null,
-    surname =null}).
+    type = null,
+    author = null,
+    description = null,
+    year = null,
+    discipline = null,
+    url = null,
+    cover = null,
+    pages_count = null,
+    size = null,
+    publisher = null,
+    duration = null}).
 
--record(publisher_meta,
+-record(person,
     {id = null,
-    name = null}).
+    name = null,
+    surname = null,
+    phone = null,
+    email = null,
+    site = null,
+    adress = null,
+    bio = null}).
 
--record(resource_meta,
+-record(publisher,
+    {id = null,
+    name = null,
+    fullname = null,
+    email = null,
+    site = null,
+    logo_id = null,
+    descritpion = null}).
+    
+-record(fileinfo,
+    {id = null,
+    name = null,
+    extention = null,
+    format = null,
+    duration = null,
+    size = null}).
+
+-record(cover,
+    {id = null,
+    name = null,
+    file = null}).
+
+-record(tag,
     {id,
     name,
-    filepath,
-    type_id}).
+    resource_id}).
+
+node_type(category) -> 0;
+node_type(book) -> 1;
+node_type(video) -> 2;
+node_type(audio) -> 3;
+node_type(presentation) -> 4.
+
+node_type_atom(0) -> category;
+node_type_atom(1) -> book;
+node_type_atom(2) -> video;
+node_type_atom(3) -> audio;
+node_type_atom(4) -> presentation.
 
 role_atom(N) when is_binary(N) -> role_atom(list_to_integer(binary_to_list(N)));
 role_atom(0) -> visitor;
@@ -65,11 +104,3 @@ role_type(user) -> 1;
 role_type(admin) -> 2;
 role_type(moderator) -> 3;
 role_type(_) -> 0.
-
-node_atom(Atom) when is_atom(Atom) -> Atom; 
-node_atom(0) -> category_meta;
-node_atom(1) -> book_meta.
-
-node_type(Integer) when is_integer(Integer) -> Integer;
-node_type(category) -> 0;
-node_type(book) -> 1.

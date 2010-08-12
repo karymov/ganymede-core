@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>currentDocument</key>
-	<string>nitrogen/site/src/http_api/get_node_json.erl</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -78,9 +76,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>59</integer>
+				<integer>40</integer>
 				<key>line</key>
-				<integer>9</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -92,14 +90,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>9</integer>
+				<integer>38</integer>
 				<key>line</key>
-				<integer>27</integer>
+				<integer>19</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>3</integer>
 		</dict>
 		<key>nitrogen/site/src/http_api/get_node_json.erl</key>
 		<dict>
@@ -236,9 +234,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>17</integer>
+				<integer>33</integer>
 				<key>line</key>
-				<integer>275</integer>
+				<integer>288</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -252,40 +250,26 @@
 				<key>column</key>
 				<integer>40</integer>
 				<key>line</key>
-				<integer>154</integer>
+				<integer>52</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>141</integer>
 		</dict>
-		<key>nitrogen/site/static/extjs/resources/css/ext-all.css</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>1</integer>
-				<key>line</key>
-				<integer>5974</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>5939</integer>
-		</dict>
 		<key>nitrogen/site/static/js/books_gui.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>10</integer>
+				<integer>33</integer>
 				<key>line</key>
-				<integer>135</integer>
+				<integer>44</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>176</integer>
+			<integer>168</integer>
 		</dict>
 		<key>nitrogen/site/templates/about.html</key>
 		<dict>
@@ -344,16 +328,9 @@
 			<integer>0</integer>
 		</dict>
 	</dict>
-	<key>openDocuments</key>
-	<array>
-		<string>nitrogen/site/static/js/books_gui.js</string>
-		<string>nitrogen/site/src/http_api/get_node_json.erl</string>
-		<string>nitrogen/site/static/extjs/resources/css/ext-all.css</string>
-		<string>nitrogen/site/static/css/base_ext.css</string>
-	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{294, 93}, {1116, 785}}</string>
+	<string>{{298, 93}, {1116, 785}}</string>
 </dict>
 </plist>

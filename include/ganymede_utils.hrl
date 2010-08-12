@@ -14,7 +14,3 @@ hex(N) when N < 10 ->
     $0+N;
 hex(N) when N >= 10, N < 16 ->
     $a + (N-10).
-
-
-convert_id("root") -> 0;
-convert_id(List) when is_list(List) -> list_to_integer(List).
