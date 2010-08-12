@@ -1,6 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % meta_tree
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% @author     Vladimir Zaytsev <vladimir.zaytsev.m@gmail.com>
+%%% @copyright  2010 Vladimir Zaytsev
+%%% @doc  
+%%% @reference
+%%% @end
+%%%
+%%% X: License???
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 -module(meta_tree).
 -behavior(gen_server).
 
@@ -24,48 +33,57 @@
 start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 	
-%% @doc add(Meta, ParentID) -> {ok, ID} | {error, Reason}
-%% @doc Meta = #category_meta{} | #rsc_meta{}
-%% @doc ParentID = integer
+%% @spec add(Meta, ParentID) -> {ok, ID} | {error, Reason}
+%%  Meta = #category_meta{} | #rsc_meta{}
+%%  ParentID = integer
+%% @end
 add(Meta, ParentID) ->
     gen_server:call(?MODULE, {add, Meta, ParentID}).
 
-%% @doc get(ID) -> #category_meta{} | #rsc_meta{} | undefined
-%% @doc ID = integer
+%% @spec get(ID) -> #category_meta{} | #rsc_meta{} | undefined
+%%  ID = integer
+%% @end
 get(ID) ->
     gen_server:call(?MODULE, {get, ID}).
 
-%% @doc remove(ID) -> {ok, ID} | undefined
-%% @doc ID = integer
+%% @spec remove(ID) -> {ok, ID} | undefined
+%%  ID = integer
+%% @end
 remove(ID) ->
     gen_server:call(?MODULE, {remove, ID}).
 
-%% @doc update(ID, Meta) -> {ok, ID} | {error, Reason}
-%% @doc ID = integer
-%% @doc Meta = #category_meta{} | #rsc_meta{}
+%% @spec update(ID, Meta) -> {ok, ID} | {error, Reason}
+%%  ID = integer
+%%  Meta = #category_meta{} | #rsc_meta{}
+%% @end
 update(ID, Meta) ->
     gen_server:call(?MODULE, {update, ID, Meta}).
 
-%% @doc replace(ID, ParentID) -> {ok, ID} | {error, Reason}
-%% @doc ID = integer
-%% @doc NewParentID = integer
+%% @spec replace(ID, ParentID) -> {ok, ID} | {error, Reason}
+%%  ID = integer
+%%  NewParentID = integer
+%% @end
 replace(ID, NewParentID) ->
     gen_server:call(?MODULE, {replace, ID, NewParentID}).
 
-%% @doc children(ID) -> [{ID,Name,Type},...] | {error, Reason}
-%% @doc ID = integer
+%% @spec children(ID) -> [{ID,Name,Type},...] | {error, Reason}
+%%  ID = integer
+%% @end
 children(ID) ->
     gen_server:call(?MODULE, {children, ID}).
 
-%% @doc root_id() -> ID | undefined
+%% @spec root_id() -> ID | undefined
+%% @end
 root_id() ->
     gen_server:call(?MODULE, root).
 
-%% @doc make_root() -> {ok, ID} | {error, Reason} 
+%% @spec make_root() -> {ok, ID} | {error, Reason}
+%% @end
 make_root() ->
     gen_server:call(?MODULE, make_root).
 
-%% @doc monitor() -> ok
+%% @spec monitor() -> ok
+%% @end
 monitor() ->
     gen_server:call(?MODULE, monitor).
 
@@ -90,16 +108,25 @@ handle_call({get, ID}, _From, State) ->
     end, {reply, R, State};
     
 handle_call({remove, ID}, _From, State) ->
-   R1 = case get_node_type(ID) of
-        {ok, category} -> sql:select(node, ID);
-        {ok, _} ->  sql:select(rsc_meta, ID);
-        {error, _} -> undefined
-    end,
-    R2 = case R1 of
-        {ok, 1} -> {ok, ID};
-        {ok, 0} -> undefined;
-        undefined -> undefined
-    end, {reply, R2, State};
+   R = case get_node_type(ID) of
+        {ok, category} ->
+            case ?MODULE:children(ID) of
+                [] ->
+                    case sql:select(node, ID) of
+                        {ok, 1} -> {ok, ID};
+                        {ok, 0} -> {error, undefined};
+                        Error -> {error, Error}
+                    end;
+                _ -> {error, category_not_empty}
+            end;
+        {ok, _} ->
+            case sql:select(rsc_meta, ID) of
+                {ok, 1} -> {ok, ID};
+                {ok, 0} -> {undefined};
+                Error -> {error, Error}
+            end;
+        {error, _} -> {error, undefined}
+    end, {reply, R, State};
 
 handle_call({update, ID, Meta}, _From, State) ->
     R = update_node(ID, Meta),
