@@ -1,5 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Ganymede header
+% ganymede_header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% @author     Vladimir Zaytsev <vladimir.zaytsev.m@gmail.com>
+%%% @copyright  2010 Vladimir Zaytsev
+%%% @doc  
+%%% @reference
+%%% @end
+%%%
+%%% X: License???
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -record(account,
@@ -76,9 +84,15 @@
     file = null}).
 
 -record(tag,
-    {id,
-    name,
-    resource_id}).
+    {id = null,
+    name = null,
+    resource_id = null}).
+    
+-record(json_book,{name,authors,description,year,url,cover,pages_count,files,publishers}).
+-record(json_video,{name,authors,description,year,url,cover,files,publishers,format}).
+-record(json_audio,{name,authors,description,year,url,cover,files,publishers,format}).
+-record(json_presentation,{name,authors,description,year,url,cover,pages_count,files,publishers}).
+
 
 node_type(category) -> 0;
 node_type(book) -> 1;
