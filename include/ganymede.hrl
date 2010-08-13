@@ -10,6 +10,55 @@
 %%% X: License???
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+-record(book,
+	{id=null,
+	name=null,
+	authors=[],
+	description=null,
+	year=null,
+	disciplines=[],
+	url=null,
+	cover=null,
+	pages_count=null,
+	files=[],
+	publishers=[]}).
+-record(video,
+	{id=null,
+	name=null,
+	authors=[],
+	description=[],
+	year=null,
+	disciplines=[],
+	url=null,
+	cover=null,
+	files=[],
+	publishers=[],
+	format=null}).
+-record(audio,
+	{id=null,
+	name=null,
+	authors=[],
+	description=null,
+	year=null,
+	disciplines=[],
+	url=null,
+	cover=null,
+	files=[],
+	publishers=[],
+	format=null}).
+-record(presentation,
+	{id=null,
+	name=null,
+	authors=[],
+	description=null,
+	year=null,
+	disciplines=[],
+	url=null,
+	cover=null,
+	slides_count=null,
+	files=[],
+	publishers=[]}).
+
 -record(account,
     {id = null,
     login = null,
@@ -29,12 +78,6 @@
     name = null,
     type = 0,
     parent = null}).
-    
--record(category_meta,
-    {id = null,
-    name = null,
-    discipline = null,
-    description = null}).
 
 -record(rsc_meta,
     {id = null,
@@ -49,17 +92,22 @@
     pages_count = null,
     size = null,
     publisher = null,
-    duration = null}).
+    duration = null,
+    file = null,
+	tag = null}).
 
 -record(person,
     {id = null,
     name = null,
-    surname = null,
     phone = null,
     email = null,
     site = null,
     adress = null,
     bio = null}).
+
+-record(discipline,
+	{id = null,
+	name = null}).
 
 -record(publisher,
     {id = null,
@@ -87,12 +135,6 @@
     {id = null,
     name = null,
     resource_id = null}).
-    
--record(json_book,{name,authors,description,year,url,cover,pages_count,files,publishers}).
--record(json_video,{name,authors,description,year,url,cover,files,publishers,format}).
--record(json_audio,{name,authors,description,year,url,cover,files,publishers,format}).
--record(json_presentation,{name,authors,description,year,url,cover,pages_count,files,publishers}).
-
 
 node_type(category) -> 0;
 node_type(book) -> 1;

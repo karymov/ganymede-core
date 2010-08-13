@@ -5,23 +5,44 @@
 go() ->
     sql:equery("DELETE FROM nodes",[]),
     sql:equery("DELETE FROM rsc_metas",[]),
-    sql:equery("DELETE FROM category_metas",[]),
+    sql:equery("DELETE FROM rsc_author",[]),
+    sql:equery("DELETE FROM rsc_discipline",[]),
+    sql:equery("DELETE FROM rsc_fileinfo",[]),
+    sql:equery("DELETE FROM rsc_publisher",[]),
+
     
     {ok,RootID} = meta_tree:make_root(),
-    
-    C1 = #category_meta{name="test cat"},
-    R1 = #rsc_meta{name="test rsc",year=2010, type=node_type(book)},
+    C1 = #rsc_meta{name="test cat",type=node_type(category)},
+    B1 = #book{
+		name="test book",
+		authors=[0,1],
+		description="just another test book",
+		year=2010,
+		disciplines=[0,1],
+		url="github.org",
+		pages_count=1234,
+		files=[0],
+		publishers=[0]
+	},
     
     {ok, C1ID} = meta_tree:add(C1, RootID),
-    {ok, R1ID} = meta_tree:add(R1, C1ID),
+    {ok, R1ID} = meta_db:add_book(C1ID, B1),
     
     io:format("~p~n",[meta_tree:children(C1ID)]),
     io:format("~p~n",[meta_tree:children(R1ID)]),
     
     ok.
-    
-    
-    
+
+% run() ->
+% 	sql:equery("DELETE FROM nodes",[]),
+%     sql:equery("DELETE FROM rsc_metas",[]),
+%     sql:equery("DELETE FROM rsc_author",[]),
+%     sql:equery("DELETE FROM rsc_discipline",[]),
+%     sql:equery("DELETE FROM rsc_fileinfo",[]),
+%     sql:equery("DELETE FROM rsc_publisher",[]),
+%     {ok,RootID} = meta_tree:make_root(),
+% 	C1 = #rsc_meta{name = <<"test cat">> ,type=node_type(category)},
+%     {ok, C1ID} = meta_tree:add(C1, RootID).
 
 % 
 % book() ->

@@ -14,3 +14,6 @@ hex(N) when N < 10 ->
     $0+N;
 hex(N) when N >= 10, N < 16 ->
     $a + (N-10).
+
+enumerate_bin_list([]) -> null;
+enumerate_bin_list([H|T]) -> lists:foldl(fun(X,A)-> <<A/binary,", ",X/binary>> end, H, T).

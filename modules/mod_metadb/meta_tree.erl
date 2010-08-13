@@ -34,13 +34,13 @@ start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 	
 %% @spec add(Meta, ParentID) -> {ok, ID} | {error, Reason}
-%%  Meta = #category_meta{} | #rsc_meta{}
+%%  Meta = #rsc_meta{}
 %%  ParentID = integer
 %% @end
 add(Meta, ParentID) ->
     gen_server:call(?MODULE, {add, Meta, ParentID}).
 
-%% @spec get(ID) -> #category_meta{} | #rsc_meta{} | undefined
+%% @spec get(ID) -> #rsc_meta{} | undefined
 %%  ID = integer
 %% @end
 get(ID) ->
@@ -54,7 +54,7 @@ remove(ID) ->
 
 %% @spec update(ID, Meta) -> {ok, ID} | {error, Reason}
 %%  ID = integer
-%%  Meta = #category_meta{} | #rsc_meta{}
+%%  Meta = #rsc_meta{}
 %% @end
 update(ID, Meta) ->
     gen_server:call(?MODULE, {update, ID, Meta}).
@@ -102,30 +102,18 @@ handle_call({add, Meta, ParentID}, _From, State) ->
     end, {reply, R, State};
 
 handle_call({get, ID}, _From, State) ->
-    R = case get_node_type(ID) of
-        {ok, category} -> sql:select(node, ID);
-        {ok, _} ->  sql:select(rsc_meta, ID);
-        {error, _} -> undefined
-    end, {reply, R, State};
+    {reply, sql:select(rsc_meta, ID), State};
     
 handle_call({remove, ID}, _From, State) ->
    R = case get_node_type(ID) of
         {ok, category} ->
             case ?MODULE:children(ID) of
                 [] ->
-                    case sql:select(node, ID) of
-                        {ok, 1} -> {ok, ID};
-                        {ok, 0} -> {error, undefined};
-                        Error -> {error, Error}
-                    end;
+					sql:delete(node, ID),
+					sql:delete(rsc_meta, ID);
                 _ -> {error, category_not_empty}
             end;
-        {ok, _} ->
-            case sql:select(rsc_meta, ID) of
-                {ok, 1} -> {ok, ID};
-                {ok, 0} -> {undefined};
-                Error -> {error, Error}
-            end;
+        {ok, _} -> sql:delete(rsc_meta, ID);
         {error, _} -> {error, undefined}
     end, {reply, R, State};
 
@@ -172,18 +160,9 @@ get_node_type(ID) ->
         _ -> {error, undefined}
     end.
 
-add_node(Meta = #rsc_meta{}, ParentID) when Meta#rsc_meta.type =:= 0 ->
-    {error, bad_rsc_meta_type};
 add_node(Meta = #rsc_meta{}, ParentID) ->
     Node = #node{name=Meta#rsc_meta.name,
         type=Meta#rsc_meta.type,
-        parent=ParentID},
-    {ok, ID} = sql:insert(Node),
-    {ok, ID} = sql:insert2(Meta,ID),
-    {ok, ID};
-add_node(Meta = #category_meta{}, ParentID) ->
-    Node = #node{name=Meta#category_meta.name,
-        type=node_type(category),
         parent=ParentID},
     {ok, ID} = sql:insert(Node),
     {ok, ID} = sql:insert2(Meta,ID),
@@ -196,13 +175,9 @@ update_node(ID, Meta = #rsc_meta{}) ->
         OldMeta when OldMeta#rsc_meta.type =:= Meta#rsc_meta.type ->
             NodeName = Meta#rsc_meta.name,
             {ok, 1} = sql:equery("UPDATE nodes SET name=$1 WHERE id=$2",[NodeName,ID]),
-            {ok, 1} = sql:update(Meta), {ok, ID};
+            {ok, 1} = sql:update(ID, Meta), {ok, ID};
         OldMeta -> {error, bad_rsc_meta_type}
-    end;
-update_node(ID, Meta = #category_meta{}) ->
-    NodeName = Meta#category_meta.name,
-    {ok, 1} = sql:equery("UPDATE nodes SET name=$1 WHERE id=$2",[NodeName,ID]),
-    {ok, 1} = sql:update(Meta), {ok, ID}.
+    end.
 
 replace_node(ID, NewParentID) ->
     {ok, 1} = sql:equery("UPDATE nodes SET parent=$1 WHERE id=$2",[NewParentID, ID]),

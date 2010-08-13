@@ -24,8 +24,9 @@ init(_Args) ->
     MetaDB = {meta_db,
                 {meta_db, start_link, []},
                 permanent, 5000, worker, dynamic},
+
     SqlCon = {sql_con,
                 {sql_con, start_link, []},
                 permanent, 5000, worker, dynamic},
      
-    {ok, {{one_for_one, 1, 60}, [Accounts, MetaTree, SqlCon]}}.
+    {ok, {{one_for_one, 1, 60}, [Accounts, MetaTree, SqlCon, MetaDB]}}.

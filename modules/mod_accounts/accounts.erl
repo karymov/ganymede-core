@@ -21,7 +21,7 @@
 -behaviour(gen_server).
 
 -include("ganymede.hrl").
--include("ganymede_utils.hrl").
+-include("ganymede_hacks.hrl").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Public API
