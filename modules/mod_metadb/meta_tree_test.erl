@@ -10,23 +10,15 @@ go() ->
     sql:equery("DELETE FROM rsc_fileinfo",[]),
     sql:equery("DELETE FROM rsc_publisher",[]),
 
-    
     {ok,RootID} = meta_tree:make_root(),
     C1 = #rsc_meta{name="test cat",type=node_type(category)},
-    B1 = #book{
-		name="test book",
-		authors=[0,1],
-		description="just another test book",
-		year=2010,
-		disciplines=[0,1],
-		url="github.org",
-		pages_count=1234,
-		files=[0],
-		publishers=[0]
-	},
+    B1 = #rsc_meta{name="test book",type=node_type(book),description="just another test book",year=2010,url="github.org",pages_count=1234},
+	
+	RData1 = [],
+	RData2 = [{authors,[0,1]},{disciplines,[0,1]},{files,[0]},{publishers,[0]}],
     
-    {ok, C1ID} = meta_tree:add(C1, RootID),
-    {ok, R1ID} = meta_db:add_book(C1ID, B1),
+    {ok, C1ID} = meta_db:add_rsc(RootID,C1, RData1),
+    {ok, R1ID} = meta_db:add_rsc(C1ID, B1, RData2),
     
     io:format("~p~n",[meta_tree:children(C1ID)]),
     io:format("~p~n",[meta_tree:children(R1ID)]),

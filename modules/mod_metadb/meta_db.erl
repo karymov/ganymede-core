@@ -15,7 +15,7 @@
 
 -export([start_link/0]).
 
--export([add_book/2, add_video/2, add_audio/2, add_presentation/2]).
+-export([add_rsc/3]).
 -export([add_person/0, add_publisher/0, add_fileinfo/0, add_cover/0]).
 -export([add_discipline/0, add_tag/0, monitor/0]).
 
@@ -31,91 +31,36 @@
 start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-%% @spec add_book(CategoryID, Book) -> {ok, ID} | {error, Reason}
-%%  CategoryID = integer
-%%  Book = #book
+%% @spec add_rsc(ParentID, RSC, RedurantDataPList) -> {ok, ID} | {error, Reason}
+%%  ParentID = integer
+%%  RSC = #rsc_meta{}
 %% @end
-add_book(CategoryID, Book) ->
-    gen_server:call(?MODULE, {add_book, CategoryID, Book}).
+add_rsc(ParentID, RSC, RedurantDataPList) when RSC#rsc_meta.type =/= null ->
+    gen_server:call(?MODULE, {add_rsc, ParentID, RSC, RedurantDataPList}).
 
-%% @spec add_video(CategoryID, Video) -> {ok, ID} {error, Reason}
-%%  CategoryID = integer
-%%  Video = #video
-%% @end
-add_video(CategoryID, Video) ->
-    gen_server:call(?MODULE, {add_video, CategoryID, Video}).
-
-%% @spec add_book(CategoryID, Audio) -> {ok, ID} {error, Reason}
-%%  CategoryID = integer
-%%  Audio = #audio
-%% @end
-add_audio(CategoryID, Audio) ->
-    gen_server:call(?MODULE, {add_audio, CategoryID, Audio}).
-
-%% @spec add_presentation(CategoryID, Presentation) -> {ok, ID} {error, Reason}
-%%  CategoryID = integer
-%%  Presentation = #presentation
-%% @end
-add_presentation(CategoryID, Presentation) ->
-    gen_server:call(?MODULE, {add_presentation, CategoryID, Presentation}).
     
-%% @spec add_book(CategoryID, Book) -> {ok, ID}
-%%  CategoryID = integer
-%%  Book = #book
-%% @end
 add_person() ->
     ok.
-    
 get_person(ID) ->
     ok.
-
-%% @spec add_book(CategoryID, Book) -> {ok, ID}
-%%  CategoryID = integer
-%%  Book = #book
-%% @end
 add_publisher() ->
     ok.
-
 get_publiser(ID) ->
     ok.
-
-%% @spec add_book(CategoryID, Book) -> {ok, ID}
-%%  CategoryID = integer
-%%  Book = #book
-%% @end
 add_fileinfo() ->
     ok.
-    
 get_fileinfo() ->
     ok.
-    
-%% @spec add_book(CategoryID, Book) -> {ok, ID}
-%%  CategoryID = integer
-%%  Book = #book
-%% @end
 add_cover() ->
     ok.
-    
 get_cover() ->
     ok.
-    
-%% @spec add_book(CategoryID, Book) -> {ok, ID}
-%%  CategoryID = integer
-%%  Book = #book
-%% @end
 add_discipline() ->
-    ok.
-    
+    ok.  
 get_discipline() ->
     ok.
-    
-%% @spec add_book(CategoryID, Book) -> {ok, ID}
-%%  CategoryID = integer
-%%  Book = #book
-%% @end
 add_tag() ->
     ok.
-    
 get_tag() ->
     ok.
 
@@ -138,37 +83,13 @@ monitor() ->
 init(_Args) ->
     {ok, []}.
 
-handle_call({add_book, CategoryID, Book}, _From, State) ->
-    RSC = #rsc_meta{
-        name = Book#book.name,
-        type = node_type(book),
-        description = Book#book.description,
-        year = Book#book.year,
-        url = Book#book.url,
-        cover = Book#book.cover,
-        pages_count = Book#book.pages_count
-    },
-	R = case meta_tree:add(RSC, CategoryID) of
+handle_call({add_rsc, ParentID, Item, RedurantDataPList}, _From, State) ->
+	R = case store_common_data(ParentID, Item) of
 		{ok, ID} ->
-			add_authors_to_rsc(ID, Book#book.authors),
-			add_publishers_to_rsc(ID, Book#book.publishers),
-			add_disciplines_to_rsc(ID, Book#book.disciplines),
-			add_files_to_rsc(ID, Book#book.files),
-			commit_rsc(ID);
-		Error -> {error, Error}
-	end, {reply, R, State};
-
-handle_call({add_video, CategoryID, Video}, _From, State) ->
-    {reply, ok, State};
-
-handle_call({add_audio, CategoryID, Audio}, _From, State) ->
-    {reply, ok, State};
-
-handle_call({add_presentation, CategoryID, Presentation}, _From, State) ->
-    {reply, ok, State};
-
-handle_call({get_src, ID}, _From, State) ->
-    {reply, meta_tree:get(ID), State}.
+			make_redundant_data_refs(ID, RedurantDataPList),
+            commit_redundant_data(ID);
+		{error, Reason} -> {error, Reason}
+	end, {reply, R, State}.	
     
 handle_cast(_, State) -> {noreply, State}.
     
@@ -180,20 +101,22 @@ terminate(_Reason, _State) -> ok.
 % Internal functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-commit_rsc(ID) ->
+store_common_data(ParentID, Item) -> meta_tree:add(Item, ParentID).
+
+make_redundant_data_refs(ID, RedundantDataPropList) ->
+    lists:foreach(
+        fun({RedurantDataTag, IDs}) ->
+            add_redurant_ref(RedurantDataTag, ID, IDs)
+        end,
+    RedundantDataPropList).
+
+commit_redundant_data(ID) ->
 	Meta = meta_tree:get(ID),
-	RSC = case node_type_atom(Meta#rsc_meta.type) of
-		category ->
-			Meta#rsc_meta{
-				discipline=get_disciplines(ID)
-			};
-		_ ->
-			Meta#rsc_meta{
-				author=get_authors(ID),
-				discipline=get_disciplines(ID),
-				publisher=get_publishers(ID),
-				file=get_files(ID)}
-	end,
+	RSC = Meta#rsc_meta{
+		author=get_authors(ID),
+		discipline=get_disciplines(ID),
+		publisher=get_publishers(ID),
+		file=get_files(ID)},
 	meta_tree:update(ID, RSC).	
 
 get_authors(ID) ->
@@ -220,19 +143,16 @@ get_disciplines(ID) ->
 	Names = many_to_many(SQL1, SQL2, ID),
 	enumerate_bin_list(Names).
 	
-add_authors_to_rsc(ID, AuthorIDs) when is_list(AuthorIDs) ->
+add_redurant_ref(authors, ID, AuthorIDs) when is_list(AuthorIDs) ->
 	SQL = "INSERT INTO rsc_author VALUES ($1,$2)",
-	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, AuthorIDs).
-
-add_publishers_to_rsc(ID, PublisherIDs) when is_list(PublisherIDs) ->
+	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, AuthorIDs);
+add_redurant_ref(publishers, ID, PublisherIDs) when is_list(PublisherIDs) ->
 	SQL = "INSERT INTO rsc_publisher VALUES ($1,$2)",
-	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, PublisherIDs).
-
-add_files_to_rsc(ID, FileIDs) when is_list(FileIDs) ->
+	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, PublisherIDs);
+add_redurant_ref(files, ID, FileIDs) when is_list(FileIDs) ->
 	SQL = "INSERT INTO rsc_fileinfo VALUES ($1,$2)",
-	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, FileIDs).
-
-add_disciplines_to_rsc(ID, DisciplineIDs) when is_list(DisciplineIDs) ->
+	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, FileIDs);
+add_redurant_ref(disciplines, ID, DisciplineIDs) when is_list(DisciplineIDs) ->
 	SQL = "INSERT INTO rsc_discipline VALUES ($1,$2)",
 	lists:foreach( fun(Id) -> sql:equery(SQL, [ID, Id]) end, DisciplineIDs).
 
